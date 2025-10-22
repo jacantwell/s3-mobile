@@ -1,0 +1,174 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Infrastructure for s3-mobile'
+
+Parameters:
+  BucketName:
+    Type: String
+    Description: Name for the S3 bucket where images will be uploaded
+  
+  PresignedUrlExpirationSeconds:
+    Type: Number
+    Default: 3600
+    Description: Expiration time for pre-signed URLs in seconds (default 1 hour)
+    MinValue: 300
+    MaxValue: 43200
+  
+  LambdaCodeS3Bucket:
+    Type: String
+    Description: S3 bucket containing the Lambda deployment package (lambda_function.zip)
+  
+  LambdaCodeS3Key:
+    Type: String
+    Default: lambda_function.zip
+    Description: S3 key for the Lambda deployment package
+
+Resources:
+  # S3 Bucket for image storage
+  ImageUploadBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref BucketName
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - PUT
+              - POST
+            AllowedOrigins:
+              - '*'
+            MaxAge: 3600
+
+  # Cognito Identity Pool
+  ImageUploadIdentityPool:
+    Type: AWS::Cognito::IdentityPool
+    Properties:
+      IdentityPoolName: ImageUploadIdentityPool
+      AllowUnauthenticatedIdentities: true
+
+  # IAM Role for unauthenticated Cognito users
+  CognitoUnauthenticatedRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-CognitoUnauthRole'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: cognito-identity.amazonaws.com
+            Action: 'sts:AssumeRoleWithWebIdentity'
+            Condition:
+              StringEquals:
+                'cognito-identity.amazonaws.com:aud': !Ref ImageUploadIdentityPool
+              'ForAnyValue:StringLike':
+                'cognito-identity.amazonaws.com:amr': unauthenticated
+      Policies:
+        - PolicyName: CognitoUnauthenticatedPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'lambda:InvokeFunction'
+                Resource: !GetAtt PresignedUrlGeneratorFunction.Arn
+
+  # Attach role to Cognito Identity Pool
+  IdentityPoolRoleAttachment:
+    Type: AWS::Cognito::IdentityPoolRoleAttachment
+    Properties:
+      IdentityPoolId: !Ref ImageUploadIdentityPool
+      Roles:
+        unauthenticated: !GetAtt CognitoUnauthenticatedRole.Arn
+
+  # IAM Role for Lambda function
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-LambdaExecutionRole'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+      Policies:
+        - PolicyName: S3PresignedUrlPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:PutObject'
+                  - 's3:PutObjectAcl'
+                Resource: !Sub '${ImageUploadBucket.Arn}/*'
+
+  # Lambda function for generating pre-signed URLs
+  PresignedUrlGeneratorFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-PresignedUrlGenerator'
+      Runtime: python3.12
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 30
+      Environment:
+        Variables:
+          BUCKET_NAME: !Ref BucketName
+          URL_EXPIRATION: !Ref PresignedUrlExpirationSeconds
+      Code:
+        S3Bucket: !Ref LambdaCodeS3Bucket
+        S3Key: !Ref LambdaCodeS3Key
+
+  # Lambda permission for invocation
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PresignedUrlGeneratorFunction
+      Action: 'lambda:InvokeFunction'
+      Principal: '*'
+
+Outputs:
+  BucketName:
+    Description: Name of the S3 bucket for image uploads
+    Value: !Ref ImageUploadBucket
+    Export:
+      Name: !Sub '${AWS::StackName}-BucketName'
+
+  BucketArn:
+    Description: ARN of the S3 bucket
+    Value: !GetAtt ImageUploadBucket.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-BucketArn'
+
+  IdentityPoolId:
+    Description: Cognito Identity Pool ID (use this in your React Native app)
+    Value: !Ref ImageUploadIdentityPool
+    Export:
+      Name: !Sub '${AWS::StackName}-IdentityPoolId'
+
+  LambdaFunctionArn:
+    Description: ARN of the Lambda function for generating pre-signed URLs
+    Value: !GetAtt PresignedUrlGeneratorFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-LambdaArn'
+
+  LambdaFunctionName:
+    Description: Name of the Lambda function (use this to invoke from app)
+    Value: !Ref PresignedUrlGeneratorFunction
+    Export:
+      Name: !Sub '${AWS::StackName}-LambdaName'
+
+  Region:
+    Description: AWS Region where resources are deployed
+    Value: !Ref 'AWS::Region'
+    Export:
+      Name: !Sub '${AWS::StackName}-Region'
