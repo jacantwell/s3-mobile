@@ -43,6 +43,15 @@ Resources:
             AllowedOrigins:
               - '*'
             MaxAge: 3600
+      LifecycleConfiguration:
+        Rules:
+          - Id: ArchiveAfter30Days
+            Status: Enabled
+            Transitions:
+              - TransitionInDays: 5   # Move to deep storage after 5 days
+                StorageClass: DEEP_ARCHIVE
+            ExpirationInDays: 365    # Delete automatically after 1 year
+
 
   # Cognito Identity Pool
   ImageUploadIdentityPool:
