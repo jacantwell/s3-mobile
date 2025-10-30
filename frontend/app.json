@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "frontend",
-    "slug": "frontend",
+    "name": "S3 Image Uploader",
+    "slug": "s3-image-uploader",
     "version": "1.0.0",
     "main": "expo-router/entry",
     "android": {
@@ -10,7 +10,8 @@
         "android.permission.READ_MEDIA_IMAGES",
         "android.permission.WAKE_LOCK",
         "android.permission.RECEIVE_BOOT_COMPLETED",
-        "android.permission.CAMERA" 
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "plugins": [
@@ -21,6 +22,11 @@
           "cameraPermission": "Allow $(PRODUCT_NAME) to use your camera."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "8faee2b2-c8d1-4a4d-b5a8-65a6989ba13d"
+      }
+    }
   }
 }
