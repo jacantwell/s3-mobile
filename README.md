@@ -139,7 +139,7 @@ This will start the Expo development server. You can:
 - Press `a` to open on Android emulator
 - Scan QR code with Expo Go app on your phone
 
-### Build APK for Testing
+### Build APK
 
 ```bash
 cd frontend
@@ -148,12 +148,6 @@ eas build --platform android --profile preview
 
 This creates an installable APK file. After the build completes (usually 10-20 minutes), you can download it from your EAS dashboard.
 
-### Build for Production
-
-```bash
-cd frontend
-eas build --platform android --profile production
-```
 
 ## Project Structure
 
