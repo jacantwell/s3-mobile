@@ -343,6 +343,7 @@ eas init --id "$PROJECT_ID" || echo -e "${YELLOW}Project may already be initiali
 echo ""
 echo -e "${YELLOW}Pushing environment variables to EAS secrets...${NC}"
 eas env:push production --path .env --force
+eas env:push preview --path .env --force
 echo -e "${GREEN}✓ Secrets pushed to EAS${NC}"
 
 cd ..
