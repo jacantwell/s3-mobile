@@ -4,6 +4,7 @@
     "slug": "s3-mobile-storage",
     "version": "1.0.0",
     "main": "expo-router/entry",
+    "icon": "./assets/images/icon.png",
     "android": {
       "package": "com.yourusername.s3mobilestorage",
       "permissions": [
