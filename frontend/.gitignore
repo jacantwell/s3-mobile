@@ -1,43 +1,91 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
-
-# dependencies
-node_modules/
+# Environment variables
+.env
+.env.local
+.env.production
+.env.development
+*.env
 
 # Expo
 .expo/
+.expo-shared/
 dist/
 web-build/
-expo-env.d.ts
 
-# Native
-.kotlin/
-*.orig.*
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Metro
-.metro-health-check*
-
-# debug
-npm-debug.*
-yarn-debug.*
-yarn-error.*
-
-# macOS
+# OSX
 .DS_Store
 *.pem
 
-# local env files
-.env*.local
+# Android
+*.apk
+*.aab
+*.ap_
+*.dex
+.gradle/
+local.properties
+*.iml
+.idea/
+captures/
+.externalNativeBuild
+.cxx/
+*.jks
+*.keystore
 
-# typescript
-*.tsbuildinfo
+# iOS
+*.ipa
+*.dSYM.zip
+*.dSYM
+Pods/
+*.xcworkspace
+!default.xcworkspace
 
-app-example
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
 
-# generated native folders
-/ios
-/android
+# Lambda
+lambda_function.zip
+
+# Logs
+*.log
+logs/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Temporary files
+*.swp
+*.swo
+*~
+.tmp/
+tmp/
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# Build outputs
+build/
+android/app/build/
+ios/build/
+
+# Config files with sensitive data (backup originals without credentials)
+# Uncomment if you want to ignore these entirely
+# config/aws.ts
+# app.json
+
+# EAS
+.eas/

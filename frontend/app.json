@@ -1,10 +1,11 @@
 {
   "expo": {
-    "name": "S3 Image Uploader",
-    "slug": "s3-image-uploader",
+    "name": "S3 Mobile Storage",
+    "slug": "s3-mobile-storage",
     "version": "1.0.0",
     "main": "expo-router/entry",
     "android": {
+      "package": "com.yourusername.s3mobilestorage",
       "permissions": [
         "android.permission.INTERNET",
         "android.permission.READ_MEDIA_IMAGES",
@@ -22,11 +23,6 @@
           "cameraPermission": "Allow $(PRODUCT_NAME) to use your camera."
         }
       ]
-    ],
-    "extra": {
-      "eas": {
-        "projectId": "8faee2b2-c8d1-4a4d-b5a8-65a6989ba13d"
-      }
-    }
+    ]
   }
 }
