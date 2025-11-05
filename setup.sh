@@ -239,10 +239,8 @@ export const AWS_CONFIG = {
 EOF
 echo -e "${GREEN}✓ aws.ts updated${NC}"
 
-echo -e "${YELLOW}Step 4/5: Updating app.json...${NC}"
-# Generate a random project ID
-PROJECT_ID=$(uuidgen | tr '[:upper:]' '[:lower:]')
-
+echo -e "${YELLOW}Step 4/5: Updating app.json (temporary - will be finalized after EAS init)...${NC}"
+# First update with package name, but leave projectId as placeholder
 cat > app.json << EOF
 {
   "expo": {
@@ -269,16 +267,11 @@ cat > app.json << EOF
           "cameraPermission": "Allow \$(PRODUCT_NAME) to use your camera."
         }
       ]
-    ],
-    "extra": {
-      "eas": {
-        "projectId": "$PROJECT_ID"
-      }
-    }
+    ]
   }
 }
 EOF
-echo -e "${GREEN}✓ app.json updated${NC}"
+echo -e "${GREEN}✓ app.json updated with package name${NC}"
 
 echo -e "${YELLOW}Step 5/5: Updating eas.json for environment variables...${NC}"
 cat > eas.json << EOF
