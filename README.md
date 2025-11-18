@@ -2,6 +2,79 @@
 
 While travelling, my camera roll filled up so quickly that I found myself in a bind: I didn't want to get stuck paying for an ongoing, expensive cloud subscription service, but I also didn't have easy access to a hard drive for offloading photos. My personal solution to this problem is this app. I designed the S3 Mobile App not as a cloud storage alternative, but as a cheap, easy-to-use, temporary storage solution. It lets me quickly dump media from my phone into my own AWS S3 bucket to free up space until I get home. To use this project yourself (on your Android phone), all you'll need is an AWS and Expo account.
 
+## Technical Implementation
+
+### Frontend
+- Language: TypeScript
+- Framework: React Native 0.81.4, React 19, Expo SDK 54
+- Navigation: Expo Router 6 with file-based routing
+- State Management: React Native Async Storage
+- AWS Integration: AWS SDK v3 (Cognito Identity, Lambda Client)
+- Image Handling: Expo Image Picker with camera and gallery support
+- Key Features: Direct S3 uploads via pre-signed URLs, unauthenticated Cognito identity provider, native Android permissions handling
+
+### Backend
+- Language: Python 3.12
+- Compute: AWS Lambda (serverless)
+- Storage: Amazon S3 with intelligent lifecycle policies
+- Authentication: AWS Cognito Identity Pool (unauthenticated access)
+- Key Features: Pre-signed URL generation, timestamp-based file naming, automatic CORS handling
+
+### Infrastructure
+- Infrastructure as Code: AWS CloudFormation
+- Cloud Provider: AWS (S3, Lambda, Cognito, IAM)
+- Deployment Strategy: Automated CloudFormation stack deployment
+- Mobile Deployment: Expo Application Services (EAS) for Android builds
+- CI/CD: Automated build pipeline with environment secret management
+
+## Key Achievements
+
+- **Serverless Architecture**: Designed and implemented a fully serverless mobile upload system using AWS Lambda and S3, eliminating server maintenance costs and achieving near-infinite scalability with pay-per-use pricing.
+
+- **Infrastructure as Code**: Built a complete CloudFormation template that provisions all AWS resources (S3 buckets, Lambda functions, Cognito Identity Pools, IAM roles) with a single command, enabling reproducible deployments and version-controlled infrastructure.
+
+- **Cost-Optimized Storage Strategy**: Implemented intelligent S3 lifecycle policies that automatically transition photos to Deep Archive after 5 days and delete after 1 year, reducing storage costs by up to 95% compared to standard S3 pricing.
+
+- **Secure Pre-Signed URL Pattern**: Developed a secure upload mechanism using Lambda-generated pre-signed URLs with configurable expiration times, allowing direct client-to-S3 uploads without exposing AWS credentials in the mobile app.
+
+- **Modern React Native Development**: Leveraged the latest React 19 and Expo SDK 54 with Expo Router for file-based routing, providing a maintainable codebase with type-safe navigation and automatic code splitting.
+
+- **Unauthenticated Identity Architecture**: Implemented AWS Cognito Identity Pool with unauthenticated access, providing temporary AWS credentials to mobile clients without requiring user authentication, perfect for personal use cases.
+
+- **Automated Deployment Pipeline**: Created comprehensive setup scripts that automate the entire deployment process from AWS infrastructure provisioning to EAS configuration and secret management, reducing setup time from hours to minutes.
+
+- **Cross-Platform Compatibility**: Built with React Native and Expo for easy deployment to both Android and iOS platforms, with comprehensive permission handling for camera and photo library access.
+
+## Architecture Highlights
+
+### Image Upload Pipeline
+1. User selects images from gallery or camera using Expo Image Picker
+2. React Native app authenticates with AWS Cognito Identity Pool (unauthenticated)
+3. App invokes Lambda function via AWS SDK with filename and metadata
+4. Lambda function generates pre-signed S3 PUT URL with 1-hour expiration
+5. App performs direct HTTP PUT to S3 using pre-signed URL
+6. S3 stores image with timestamp-prefixed key to prevent overwrites
+7. After 5 days, S3 lifecycle policy automatically transitions to Deep Archive
+8. After 1 year, images are automatically deleted to minimize costs
+
+### Infrastructure Deployment Pipeline
+1. Developer runs automated setup script with configuration parameters
+2. Lambda deployment package is zipped and uploaded to staging S3 bucket
+3. CloudFormation stack creates all resources with proper IAM permissions
+4. Stack outputs (Identity Pool ID, Lambda name, bucket name) are extracted
+5. Environment variables are injected into frontend `.env` file
+6. EAS project is configured with Expo username and secrets
+7. Secrets are pushed to EAS for secure cloud builds
+8. Developer can build APK via EAS or run locally with Expo Go
+
+### Security Features
+- **No Credentials in Code**: AWS credentials never stored in mobile app; Cognito provides temporary credentials
+- **Least Privilege IAM**: Cognito role only has permission to invoke specific Lambda function
+- **Pre-Signed URL Expiration**: Upload URLs expire after 1 hour to prevent unauthorized access
+- **Public Access Blocking**: S3 bucket configured to block all public access by default
+- **CORS Configuration**: Restricted CORS policy allowing only PUT/POST from specific origins
+- **Environment Secret Management**: Sensitive configuration stored in EAS secrets, never committed to git
+
 # Setup Guide
 
 This guide will help you set up your own instance of the S3 Mobile Storage app with your AWS account and Expo account.
